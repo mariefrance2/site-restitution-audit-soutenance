@@ -1,6 +1,7 @@
 import {
   CircleCheckBig,
   FlaskConical,
+  NotebookPen,
   Server,
   ShieldCheck,
   Swords,
@@ -21,17 +22,25 @@ const ICONS: Record<string, LucideIcon> = {
   "circle-check-big": CircleCheckBig,
 };
 
+const PHASE_COLORS = ["#E24B4A", "#791F1F", "#B23A3F", "#501313", "#E24B4A"];
+const PHASE_TINTS = ["#FCEEED", "#F7D9D8", "#FBE5E4", "#F7D9D8", "#FCEEED"];
+const TOOL_COLORS = ["#791F1F", "#E24B4A", "#B23A3F", "#8C2A2A", "#A83232"];
+
 export function BilanDashboard() {
   const phases = timeline as TimelinePhase[];
   const toolItems = tools as ToolItem[];
 
   return (
-    <section id="bilan" className="relative py-20 sm:py-28">
+    <section id="bilan" className="relative overflow-hidden py-20 sm:py-28">
+      <div
+        className="absolute inset-x-0 top-0 -z-10 h-[420px]"
+        style={{ background: "linear-gradient(to bottom, #FCEEED 0%, rgba(252,238,237,0) 100%)" }}
+      />
       <div className="container-page">
         <SectionHeading
           eyebrow="Section 3 — Bilan de restitution"
           title="De la mise en place du laboratoire au retest de validation"
-          subtitle="Cinq mois de campagne structurée, des outils spécialisés, et une réduction mesurée du taux de réussite des attaques sur l'ensemble des catégories testées."
+          subtitle="Trois mois de campagne structurée (1er juin - 31 août 2026), des outils spécialisés, et une réduction mesurée du taux de réussite des attaques sur l'ensemble des catégories testées."
         />
 
         {/* Timeline */}
@@ -41,14 +50,19 @@ export function BilanDashboard() {
             <StaggerGroup className="grid gap-8 lg:grid-cols-5 lg:gap-4">
               {phases.map((phase, i) => {
                 const Icon = ICONS[phase.icon] ?? ShieldCheck;
+                const color = PHASE_COLORS[i % PHASE_COLORS.length];
+                const tint = PHASE_TINTS[i % PHASE_TINTS.length];
                 return (
                   <StaggerItem key={phase.id}>
                     <div className="relative flex flex-col items-start lg:items-center lg:text-center">
-                      <span className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-brand-red bg-white shadow-card">
-                        <Icon className="h-5 w-5 text-brand-red" strokeWidth={1.75} />
+                      <span
+                        className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 bg-white shadow-card transition-transform duration-300 hover:-translate-y-0.5"
+                        style={{ borderColor: color, backgroundColor: tint }}
+                      >
+                        <Icon className="h-5 w-5" style={{ color }} strokeWidth={1.75} />
                       </span>
                       <div className="mt-4 lg:px-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-brand-red">
+                        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color }}>
                           {phase.period}
                         </p>
                         <h4 className="mt-1 text-sm font-bold text-brand-red-darker">
@@ -69,8 +83,21 @@ export function BilanDashboard() {
           </div>
         </FadeIn>
 
+        {/* Parallel report-writing note */}
+        <FadeIn delay={0.12} className="mt-8">
+          <div className="flex items-start gap-3 rounded-xl border border-dashed border-brand-red/30 bg-brand-rose-soft px-5 py-4">
+            <NotebookPen className="mt-0.5 h-4.5 w-4.5 shrink-0 text-brand-red-dark" strokeWidth={1.75} />
+            <p className="text-sm leading-relaxed text-brand-red-darker">
+              <strong className="font-semibold">Rédaction du mémoire en continu :</strong> en parallèle
+              de chacune de ces étapes, la rédaction du rapport de fin d&apos;études s&apos;est
+              poursuivie du 1er juin au 31 août 2026, jusqu&apos;à la finalisation du document
+              restitué ici.
+            </p>
+          </div>
+        </FadeIn>
+
         {/* Before / after chart */}
-        <FadeIn delay={0.15} className="mt-16">
+        <FadeIn delay={0.15} className="mt-10">
           <div className="card-surface p-6 sm:p-7">
             <h3 className="text-lg font-semibold text-brand-red-darker">
               Taux de réussite des attaques, avant / après remédiation
@@ -94,24 +121,27 @@ export function BilanDashboard() {
               Teaming applicatif dédié aux systèmes d&apos;IA générative.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              {toolItems.map((tool) => (
-                <div
-                  key={tool.id}
-                  className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-surface-card px-4 py-3"
-                >
-                  <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white ${
-                      tool.category === "infrastructure" ? "bg-brand-red-dark" : "bg-brand-red"
-                    }`}
+              {toolItems.map((tool, i) => {
+                const color = TOOL_COLORS[i % TOOL_COLORS.length];
+                return (
+                  <div
+                    key={tool.id}
+                    className="flex items-center gap-3 rounded-xl border border-black/[0.06] bg-surface-card px-4 py-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover"
+                    style={{ borderTopColor: color, borderTopWidth: 3 }}
                   >
-                    {tool.name.slice(0, 1)}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-brand-red-darker">{tool.name}</p>
-                    <p className="text-xs text-neutral-500">{tool.role}</p>
+                    <span
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white"
+                      style={{ backgroundColor: color }}
+                    >
+                      {tool.name.slice(0, 1)}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-brand-red-darker">{tool.name}</p>
+                      <p className="text-xs text-neutral-500">{tool.role}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </FadeIn>

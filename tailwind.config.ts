@@ -13,6 +13,10 @@ const config: Config = {
           red: "#E24B4A",
           "red-dark": "#791F1F",
           "red-darker": "#501313",
+          rose: "#F0A6A4",
+          "rose-light": "#F7D9D8",
+          "rose-soft": "#FCEEED",
+          crimson: "#B23A3F",
         },
         surface: {
           DEFAULT: "#FFFFFF",

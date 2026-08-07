@@ -22,7 +22,10 @@ export function KpiCard({
   description,
 }: KpiCardProps) {
   return (
-    <div className="card-surface card-surface-hover group p-6">
+    <div
+      className="card-surface card-surface-hover group border-t-4 p-6"
+      style={{ borderTopColor: accentHex }}
+    >
       <div className="flex items-start justify-between">
         <div
           className="flex h-11 w-11 items-center justify-center rounded-[10px] transition-transform duration-300 group-hover:scale-105"

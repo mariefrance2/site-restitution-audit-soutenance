@@ -2,35 +2,35 @@
   {
     "id": "phase-1",
     "title": "Mise en place du laboratoire",
-    "period": "Janvier 2026",
+    "period": "1re - 2e semaine de juin 2026",
     "description": "Déploiement d'un environnement GLPI isolé répliquant l'agent IA de production, hors du périmètre client, pour permettre des tests offensifs sans risque.",
     "icon": "flask-conical"
   },
   {
     "id": "phase-2",
     "title": "Audit infrastructure",
-    "period": "Février 2026",
+    "period": "Juin 2026",
     "description": "Scan de vulnérabilités réseau et système avec Nessus sur les serveurs hébergeant GLPI et l'agent IA.",
     "icon": "server"
   },
   {
     "id": "phase-3",
     "title": "Red Teaming applicatif",
-    "period": "Mars 2026",
+    "period": "Fin juin - juillet 2026",
     "description": "Campagnes offensives ciblées sur l'agent IA (Promptfoo, Garak, DeepTeam) et sur l'API applicative (Postman) selon le référentiel OWASP LLM Top 10.",
     "icon": "swords"
   },
   {
     "id": "phase-4",
     "title": "Remédiation",
-    "period": "Avril 2026",
+    "period": "Fin juillet - août 2026",
     "description": "Correction des 16 constats identifiés : durcissement infrastructure, renforcement des garde-fous applicatifs, cloisonnement des permissions et du contexte de l'agent.",
     "icon": "shield-check"
   },
   {
     "id": "phase-5",
     "title": "Retest & validation",
-    "period": "Mai 2026",
+    "period": "Dernière semaine d'août 2026",
     "description": "Rejeu de l'intégralité des scénarios offensifs pour valider l'efficacité des correctifs et mesurer la réduction du risque résiduel.",
     "icon": "circle-check-big"
   }

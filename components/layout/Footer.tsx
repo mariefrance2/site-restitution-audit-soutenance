@@ -18,8 +18,8 @@ export function Footer() {
           </div>
         </div>
         <p className="text-xs text-neutral-400">
-          Site de restitution académique — données figées au {" "}
-          <time dateTime="2026-08-07">7 août 2026</time>. Constats et remédiations issus de la campagne d&apos;audit et de Red Teaming.
+          Site de restitution académique — campagne menée du 1er juin au {" "}
+          <time dateTime="2026-08-31">31 août 2026</time>. Constats et remédiations issus de l&apos;audit et du Red Teaming réalisés pour le compte de la BICEC.
         </p>
       </div>
     </footer>

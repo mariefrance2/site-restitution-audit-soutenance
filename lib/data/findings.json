@@ -11,8 +11,8 @@
     "remediation": "Désactivation de TLS 1.0/1.1, application stricte de TLS 1.2+ avec suites de chiffrement modernes (config Apache/Nginx durcie).",
     "statusAfter": "Seul TLS 1.2/1.3 accepté, vérifié par retest Nessus",
     "remediated": true,
-    "dateFound": "2026-02-04",
-    "dateRemediated": "2026-04-11"
+    "dateFound": "2026-06-09",
+    "dateRemediated": "2026-08-04"
   },
   {
     "id": "INF-02",
@@ -26,8 +26,8 @@
     "remediation": "Reconfiguration de sshd_config : suppression des suites CBC/MD5, activation exclusive de chacha20-poly1305 et hmac-sha2.",
     "statusAfter": "Algorithmes faibles désactivés, conformité confirmée",
     "remediated": true,
-    "dateFound": "2026-02-04",
-    "dateRemediated": "2026-04-09"
+    "dateFound": "2026-06-09",
+    "dateRemediated": "2026-08-03"
   },
   {
     "id": "INF-03",
@@ -41,8 +41,8 @@
     "remediation": "Activation de `requirepass`, restriction du bind à localhost, mise en place d'un pare-feu applicatif (ACL réseau) et migration vers Redis ACL par rôle.",
     "statusAfter": "Authentification obligatoire, accès restreint au réseau applicatif interne",
     "remediated": true,
-    "dateFound": "2026-02-05",
-    "dateRemediated": "2026-04-08"
+    "dateFound": "2026-06-10",
+    "dateRemediated": "2026-08-02"
   },
   {
     "id": "GRD-01",
@@ -56,8 +56,8 @@
     "remediation": "Mise en place d'un rate limiting par token (100 req/min) via middleware API Gateway, avec réponses 429 et backoff exponentiel côté client.",
     "statusAfter": "Rate limiting actif et validé par tests de charge Postman",
     "remediated": true,
-    "dateFound": "2026-03-02",
-    "dateRemediated": "2026-04-14"
+    "dateFound": "2026-06-23",
+    "dateRemediated": "2026-08-06"
   },
   {
     "id": "GRD-02",
@@ -71,8 +71,8 @@
     "remediation": "Ajout d'une couche de validation/normalisation des entrées et d'un détecteur heuristique de patterns d'injection avant appel au modèle.",
     "statusAfter": "Filtrage actif, tentatives suspectes journalisées et bloquées",
     "remediated": true,
-    "dateFound": "2026-03-03",
-    "dateRemediated": "2026-04-16"
+    "dateFound": "2026-06-24",
+    "dateRemediated": "2026-08-07"
   },
   {
     "id": "LLM01-01",
@@ -86,8 +86,8 @@
     "remediation": "Séparation stricte instructions système / contenu utilisateur (balisage), renforcement du prompt système avec règles non-négociables, validation de sortie par un second modèle de contrôle.",
     "statusAfter": "1/22 scénarios encore partiellement réussi (impact réduit, sans conséquence métier)",
     "remediated": true,
-    "dateFound": "2026-03-05",
-    "dateRemediated": "2026-04-18"
+    "dateFound": "2026-06-29",
+    "dateRemediated": "2026-08-10"
   },
   {
     "id": "LLM01-02",
@@ -101,8 +101,8 @@
     "remediation": "Nettoyage systématique du contenu (strip HTML/CSS caché), sandboxing du contexte ticket, détection de contenu anormalement formaté.",
     "statusAfter": "2/20 charges encore détectées, neutralisées avant traitement",
     "remediated": true,
-    "dateFound": "2026-03-06",
-    "dateRemediated": "2026-04-18"
+    "dateFound": "2026-06-30",
+    "dateRemediated": "2026-08-10"
   },
   {
     "id": "LLM01-03",
@@ -116,8 +116,8 @@
     "remediation": "Détection et décodage préalable des contenus encodés (Base64, hex, ROT13) avant analyse, analyse sémantique complémentaire au filtrage syntaxique.",
     "statusAfter": "0/15 tentative efficace après retest",
     "remediated": true,
-    "dateFound": "2026-03-07",
-    "dateRemediated": "2026-04-19"
+    "dateFound": "2026-07-01",
+    "dateRemediated": "2026-08-11"
   },
   {
     "id": "LLM02-01",
@@ -131,8 +131,8 @@
     "remediation": "Suppression des secrets du contexte du prompt système, gestion des identifiants via coffre-fort de secrets (vault) hors du périmètre accessible au modèle, filtrage de sortie (regex + classifieur PII/secrets).",
     "statusAfter": "Aucune fuite constatée sur les 4 scénarios rejoués",
     "remediated": true,
-    "dateFound": "2026-03-09",
-    "dateRemediated": "2026-04-21"
+    "dateFound": "2026-07-06",
+    "dateRemediated": "2026-08-13"
   },
   {
     "id": "LLM02-02",
@@ -146,8 +146,8 @@
     "remediation": "Cloisonnement du contexte par ticket et par rôle utilisateur, filtrage de sortie basé sur la détection d'entités nommées (PII), principe du moindre privilège sur les requêtes GLPI.",
     "statusAfter": "1/16 scénario résiduel mineur, sans donnée sensible exposée",
     "remediated": true,
-    "dateFound": "2026-03-10",
-    "dateRemediated": "2026-04-22"
+    "dateFound": "2026-07-07",
+    "dateRemediated": "2026-08-13"
   },
   {
     "id": "LLM06-01",
@@ -161,8 +161,8 @@
     "remediation": "Introduction d'un mécanisme de validation humaine (Human-in-the-loop) pour toute action à fort impact (clôture, réaffectation, suppression), journalisation systématique des décisions de l'agent.",
     "statusAfter": "Validation humaine obligatoire sur les actions à fort impact",
     "remediated": true,
-    "dateFound": "2026-03-11",
-    "dateRemediated": "2026-04-24"
+    "dateFound": "2026-07-10",
+    "dateRemediated": "2026-08-15"
   },
   {
     "id": "LLM06-02",
@@ -176,8 +176,8 @@
     "remediation": "Application du principe du moindre privilège : création d'un rôle dédié restreint aux actions strictement nécessaires (lecture/écriture tickets, pas d'administration).",
     "statusAfter": "Rôle applicatif restreint, droits d'administration révoqués",
     "remediated": true,
-    "dateFound": "2026-03-12",
-    "dateRemediated": "2026-04-24"
+    "dateFound": "2026-07-11",
+    "dateRemediated": "2026-08-15"
   },
   {
     "id": "LLM06-03",
@@ -191,8 +191,8 @@
     "remediation": "Suppression de la capacité de suppression définitive du périmètre d'action autonome de l'agent ; toute suppression nécessite une action manuelle d'un technicien habilité.",
     "statusAfter": "0/10 scénario de suppression non confirmée",
     "remediated": true,
-    "dateFound": "2026-03-13",
-    "dateRemediated": "2026-04-25"
+    "dateFound": "2026-07-12",
+    "dateRemediated": "2026-08-16"
   },
   {
     "id": "LLM08-01",
@@ -206,8 +206,8 @@
     "remediation": "Mise en place d'un pipeline d'ingestion avec validation de contenu, quarantaine et modération avant indexation, traçabilité de la provenance des documents vectorisés.",
     "statusAfter": "Contenu suspect mis en quarantaine avant indexation, 0 pollution constatée",
     "remediated": true,
-    "dateFound": "2026-03-14",
-    "dateRemediated": "2026-04-28"
+    "dateFound": "2026-07-17",
+    "dateRemediated": "2026-08-19"
   },
   {
     "id": "LLM08-02",
@@ -221,8 +221,8 @@
     "remediation": "Ajout de métadonnées de cloisonnement (tenant/service) et filtrage obligatoire au niveau de la requête vectorielle.",
     "statusAfter": "Cloisonnement effectif vérifié par tests croisés",
     "remediated": true,
-    "dateFound": "2026-03-14",
-    "dateRemediated": "2026-04-28"
+    "dateFound": "2026-07-17",
+    "dateRemediated": "2026-08-19"
   },
   {
     "id": "LLM10-01",
@@ -236,7 +236,7 @@
     "remediation": "Mise en place de quotas journaliers par utilisateur avec alerte de dépassement et dégradation progressive du service (throttling doux).",
     "statusAfter": "Quotas actifs, alertes de dépassement opérationnelles",
     "remediated": true,
-    "dateFound": "2026-03-16",
-    "dateRemediated": "2026-04-30"
+    "dateFound": "2026-07-21",
+    "dateRemediated": "2026-08-21"
   }
 ]

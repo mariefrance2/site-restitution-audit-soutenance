@@ -22,7 +22,11 @@ const dots: { x: number; y: number; r: number; delay?: number; highlight?: boole
   { x: 268, y: 144, r: 2.2, highlight: true, delay: 1.4 },
 ];
 
-export function WorldPulse() {
+export function WorldPulse({ tone = "light" }: { tone?: "light" | "dark" }) {
+  const highlightColor = tone === "dark" ? "#FFFFFF" : "#E24B4A";
+  const baseColor = tone === "dark" ? "#FFFFFF" : "#791F1F";
+  const baseOpacity = tone === "dark" ? 0.35 : 0.22;
+
   return (
     <svg
       viewBox="0 0 400 190"
@@ -36,8 +40,8 @@ export function WorldPulse() {
           cx={d.x}
           cy={d.y}
           r={d.r}
-          fill={d.highlight ? "#E24B4A" : "#791F1F"}
-          fillOpacity={d.highlight ? 0.9 : 0.22}
+          fill={d.highlight ? highlightColor : baseColor}
+          fillOpacity={d.highlight ? 0.95 : baseOpacity}
           initial={d.highlight ? { r: d.r } : undefined}
           animate={
             d.highlight

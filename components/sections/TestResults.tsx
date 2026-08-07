@@ -5,7 +5,15 @@ import { ArrowRight, CheckCircle2, CircleDot, Wrench } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CriticalityBadge } from "@/components/ui/CriticalityBadge";
 import { FadeIn, StaggerGroup, StaggerItem } from "@/components/ui/FadeIn";
-import { categories, criticalities, findings, getCategoryMeta, cx } from "@/lib/utils";
+import {
+  categories,
+  criticalities,
+  dominantCriticalityForCategory,
+  findings,
+  getCategoryMeta,
+  getCriticalityMeta,
+  cx,
+} from "@/lib/utils";
 import type { CriticalityLevel, FindingCategory } from "@/lib/types";
 
 export function TestResults() {
@@ -25,7 +33,15 @@ export function TestResults() {
   );
 
   return (
-    <section id="resultats" className="relative bg-white py-20 sm:py-28">
+    <section id="resultats" className="relative overflow-hidden bg-white py-20 sm:py-28">
+      <div
+        className="pointer-events-none absolute -right-40 top-24 -z-10 h-[420px] w-[420px] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(240,166,164,0.25) 0%, rgba(240,166,164,0) 70%)" }}
+      />
+      <div
+        className="pointer-events-none absolute -left-32 bottom-10 -z-10 h-[320px] w-[320px] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(226,75,74,0.10) 0%, rgba(226,75,74,0) 70%)" }}
+      />
       <div className="container-page">
         <SectionHeading
           eyebrow="Section 2 — Résultats des tests"
@@ -81,10 +97,18 @@ export function TestResults() {
         <div className="mt-10 flex flex-col gap-14">
           {groupedCategories.map((cat) => {
             const items = filtered.filter((f) => f.category === cat.id);
+            const accent = getCriticalityMeta(dominantCriticalityForCategory(cat.id)).hex;
             return (
               <div key={cat.id}>
                 <FadeIn>
-                  <h3 className="text-xl font-bold text-brand-red-darker">{cat.label}</h3>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: accent }}
+                      aria-hidden
+                    />
+                    <h3 className="text-xl font-bold text-brand-red-darker">{cat.label}</h3>
+                  </div>
                   <p className="mt-1 max-w-2xl text-sm text-neutral-500">{cat.description}</p>
                 </FadeIn>
                 <StaggerGroup className="mt-6 grid gap-5 md:grid-cols-2">
@@ -145,8 +169,12 @@ function FilterPill({
 
 function FindingCard({ finding }: { finding: (typeof findings)[number] }) {
   const catMeta = getCategoryMeta(finding.category);
+  const criticalityHex = getCriticalityMeta(finding.criticality).hex;
   return (
-    <article className="card-surface card-surface-hover flex h-full flex-col p-6">
+    <article
+      className="card-surface card-surface-hover flex h-full flex-col border-l-4 p-6"
+      style={{ borderLeftColor: criticalityHex }}
+    >
       <div className="flex items-start justify-between gap-3">
         <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
           {finding.id}

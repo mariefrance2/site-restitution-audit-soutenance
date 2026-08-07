@@ -12,7 +12,11 @@ export function OverviewDashboard() {
   const eleves = countByCriticality("eleve");
 
   return (
-    <section id="apercu" className="relative py-20 sm:py-28">
+    <section id="apercu" className="relative overflow-hidden py-20 sm:py-28">
+      <div
+        className="pointer-events-none absolute -right-28 top-0 -z-10 h-[380px] w-[380px] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(240,166,164,0.24) 0%, rgba(240,166,164,0) 70%)" }}
+      />
       <div className="container-page">
         <SectionHeading
           eyebrow="Section 1 — Vue d'ensemble"
