@@ -1,46 +1,35 @@
-import { mkdir, readdir, stat, writeFile } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
+import { list, put } from "@vercel/blob";
 import { NextRequest, NextResponse } from "next/server";
 
-const REPORTS_DIR = path.join(process.cwd(), "public", "reports");
-
-async function ensureDir() {
-  if (!existsSync(REPORTS_DIR)) {
-    await mkdir(REPORTS_DIR, { recursive: true });
-  }
-}
+const PREFIX = "reports/";
 
 function sanitizeFilename(name: string): string {
-  const base = path.basename(name).replace(/[^a-zA-Z0-9._-]/g, "_");
+  const base = (name.split(/[\\/]/).pop() || "rapport.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
   return base.toLowerCase().endsWith(".pdf") ? base : `${base}.pdf`;
 }
 
 export async function GET() {
-  await ensureDir();
-  const entries = await readdir(REPORTS_DIR);
-  const files = await Promise.all(
-    entries
-      .filter((name) => name.toLowerCase().endsWith(".pdf"))
-      .map(async (name) => {
-        const filePath = path.join(REPORTS_DIR, name);
-        const info = await stat(filePath);
-        return {
-          name,
-          size: info.size,
-          uploadedAt: info.mtime.toISOString(),
-          url: `/reports/${encodeURIComponent(name)}`,
-        };
-      })
-  );
+  try {
+    const { blobs } = await list({ prefix: PREFIX, mode: "expanded" });
 
-  files.sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
-  return NextResponse.json({ files });
+    const files = blobs
+      .filter((b) => b.pathname.toLowerCase().endsWith(".pdf"))
+      .map((b) => ({
+        name: b.pathname.slice(PREFIX.length),
+        size: b.size,
+        uploadedAt: b.uploadedAt.toISOString(),
+        url: b.url,
+      }))
+      .sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
+
+    return NextResponse.json({ files });
+  } catch {
+    // Vercel Blob non configuré (BLOB_READ_WRITE_TOKEN manquant) : liste vide plutôt qu'une erreur bloquante.
+    return NextResponse.json({ files: [] });
+  }
 }
 
 export async function POST(request: NextRequest) {
-  await ensureDir();
-
   const formData = await request.formData();
   const file = formData.get("file");
 
@@ -63,27 +52,31 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let filename = sanitizeFilename(file.name);
-  let destination = path.join(REPORTS_DIR, filename);
+  const filename = sanitizeFilename(file.name);
 
-  if (existsSync(destination)) {
-    const ext = path.extname(filename);
-    const stem = path.basename(filename, ext);
-    filename = `${stem}-${Date.now()}${ext}`;
-    destination = path.join(REPORTS_DIR, filename);
+  let blob;
+  try {
+    blob = await put(`${PREFIX}${filename}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: "application/pdf",
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        error:
+          "Le stockage des rapports (Vercel Blob) n'est pas configuré. Vérifiez la variable d'environnement BLOB_READ_WRITE_TOKEN.",
+      },
+      { status: 500 }
+    );
   }
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(destination, buffer);
-
-  const info = await stat(destination);
 
   return NextResponse.json({
     file: {
-      name: filename,
-      size: info.size,
-      uploadedAt: info.mtime.toISOString(),
-      url: `/reports/${encodeURIComponent(filename)}`,
+      name: blob.pathname.slice(PREFIX.length),
+      size: file.size,
+      uploadedAt: new Date().toISOString(),
+      url: blob.url,
     },
   });
 }

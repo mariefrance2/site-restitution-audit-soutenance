@@ -24,9 +24,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# uploaded reports (kept locally, not versioned)
-/data/reports/*
-!/data/reports/.gitkeep
-/public/reports/*
-!/public/reports/.gitkeep

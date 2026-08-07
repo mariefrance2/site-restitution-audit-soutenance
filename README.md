@@ -16,6 +16,11 @@ npm run dev
 
 Le site est accessible sur [http://localhost:3000](http://localhost:3000).
 
+La zone de dépôt de rapports PDF (section 5) nécessite un jeton **Vercel Blob** —
+voir [Dépôt de rapports PDF](#dépôt-de-rapports-pdf) ci-dessous. Sans ce jeton,
+le reste du site fonctionne normalement, seul l'upload/listing des rapports
+renverra une erreur.
+
 Pour un build de production local :
 
 ```bash
@@ -45,7 +50,6 @@ lib/
                           timeline, taux d'attaque, conséquences)
   types.ts                Types TypeScript partagés
   utils.ts                Fonctions utilitaires (agrégations, formatage)
-public/reports/           Stockage local des rapports PDF déposés via l'UI
 ```
 
 ## Données
@@ -77,19 +81,29 @@ légende visible et explicite (aucune information portée par la seule couleur).
 ## Dépôt de rapports PDF
 
 La section 5 propose une zone de glisser-déposer qui envoie les fichiers PDF
-vers `POST /api/reports`. Les fichiers sont stockés sur disque dans
-`public/reports/` (non versionné, hors `.gitkeep`) et sont immédiatement
-consultables/téléchargeables via la liste, alimentée par `GET /api/reports`.
-Aucune authentification n'est requise, conformément au cahier des charges
-(usage en démonstration de soutenance).
+vers `POST /api/reports`. Les fichiers sont stockés via **[Vercel Blob](https://vercel.com/docs/storage/vercel-blob)**
+(et non sur le disque local, en lecture seule sur les plateformes serverless
+comme Vercel) et sont immédiatement consultables/téléchargeables via la
+liste, alimentée par `GET /api/reports`. Aucune authentification n'est
+requise, conformément au cahier des charges (usage en démonstration de
+soutenance) ; les fichiers sont stockés avec un accès public (URL directe de
+visualisation/téléchargement), sans nécessiter de génération d'URL signées.
 
-## Déploiement Vercel (optionnel)
+**Configuration requise — jeton `BLOB_READ_WRITE_TOKEN`** (voir `.env.example`) :
+
+- **Sur Vercel** : dans le dashboard du projet, `Storage` → `Create Database` →
+  `Blob`, puis rattacher le store au projet. La variable d'environnement est
+  alors injectée automatiquement, aucune action supplémentaire n'est nécessaire.
+- **En local** : après avoir créé le Blob Store et lié le projet (`vercel link`),
+  récupérer la variable avec `vercel env pull .env.local`, ou la copier
+  manuellement depuis le dashboard (`Storage` → le Blob Store → `.env.local`)
+  dans un fichier `.env.local` à la racine du projet (non versionné).
+
+## Déploiement Vercel
 
 Le projet est compatible Vercel sans configuration additionnelle
-(`vercel deploy`). À noter : sur un déploiement serverless, l'écriture sur
-disque de `public/reports/` n'est pas persistante entre les invocations —
-pour un usage 100% fiable pendant la soutenance, privilégier le lancement en
-local (`npm run dev` / `npm run start`).
+(`vercel deploy`), à condition d'avoir rattaché un Blob Store comme décrit
+ci-dessus pour que la zone de dépôt de rapports fonctionne.
 
 ## Notes techniques
 
