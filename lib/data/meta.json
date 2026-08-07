@@ -1,0 +1,52 @@
+{
+  "categories": [
+    {
+      "id": "infrastructure",
+      "label": "Audit infrastructure",
+      "shortLabel": "Infrastructure",
+      "description": "Scan de vulnérabilités réseau et système (Nessus) sur les serveurs hébergeant l'agent IA et GLPI."
+    },
+    {
+      "id": "garde-fous",
+      "label": "Garde-fous applicatifs",
+      "shortLabel": "Garde-fous",
+      "description": "Contrôles applicatifs transverses : limitation de débit, filtrage des entrées, quotas."
+    },
+    {
+      "id": "llm01",
+      "label": "LLM01 — Prompt Injection",
+      "shortLabel": "LLM01",
+      "description": "Manipulation du comportement de l'agent via des instructions injectées, directement ou indirectement."
+    },
+    {
+      "id": "llm02",
+      "label": "LLM02 — Divulgation d'informations sensibles",
+      "shortLabel": "LLM02",
+      "description": "Exposition involontaire de données confidentielles ou personnelles via les réponses du modèle."
+    },
+    {
+      "id": "llm06",
+      "label": "LLM06 — Excès d'autonomie (Excessive Agency)",
+      "shortLabel": "LLM06",
+      "description": "Actions prises par l'agent au-delà de son périmètre fonctionnel légitime, sans supervision humaine."
+    },
+    {
+      "id": "llm08",
+      "label": "LLM08 — Vulnérabilités des vecteurs et embeddings",
+      "shortLabel": "LLM08",
+      "description": "Faiblesses de la base vectorielle utilisée par le système RAG de l'agent."
+    },
+    {
+      "id": "llm10",
+      "label": "LLM10 — Consommation non maîtrisée",
+      "shortLabel": "LLM10",
+      "description": "Absence de limites sur la consommation de ressources (tokens, requêtes) par l'agent."
+    }
+  ],
+  "criticalities": [
+    { "id": "critique", "label": "Critique", "hex": "#791F1F", "order": 0 },
+    { "id": "eleve", "label": "Élevé", "hex": "#E24B4A", "order": 1 },
+    { "id": "moyen", "label": "Moyen", "hex": "#EF9F27", "order": 2 },
+    { "id": "faible", "label": "Faible", "hex": "#639922", "order": 3 }
+  ]
+}

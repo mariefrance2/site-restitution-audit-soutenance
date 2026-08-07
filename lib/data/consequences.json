@@ -1,0 +1,70 @@
+{
+  "stats": [
+    {
+      "id": "cost-global",
+      "value": "4,44 M$",
+      "label": "Coût mondial moyen d'une violation de données",
+      "description": "Coût moyen constaté à l'échelle mondiale pour une organisation victime d'une violation de données en 2025.",
+      "source": "IBM, Cost of a Data Breach Report 2025",
+      "trend": "down"
+    },
+    {
+      "id": "cost-france",
+      "value": "3,59 M€",
+      "label": "Coût moyen en France",
+      "description": "Coût moyen d'une violation de données pour les organisations françaises en 2025.",
+      "source": "IBM, Cost of a Data Breach Report 2025"
+    },
+    {
+      "id": "ia-share",
+      "value": "1 sur 6",
+      "label": "Violations impliquant l'IA",
+      "description": "Proportion des violations de données recensées en 2025 impliquant un système d'intelligence artificielle.",
+      "source": "IBM, Cost of a Data Breach Report 2025",
+      "trend": "up"
+    },
+    {
+      "id": "shadow-ia",
+      "value": "+670 000 $",
+      "label": "Surcoût lié à la « Shadow IA »",
+      "description": "Surcoût moyen généré par l'usage non contrôlé d'outils IA (Shadow IA) lors d'une violation de données.",
+      "source": "IBM, Cost of a Data Breach Report 2025",
+      "trend": "up"
+    },
+    {
+      "id": "operational-impact",
+      "value": "86 %",
+      "label": "Entités subissant une perturbation opérationnelle",
+      "description": "Part des organisations touchées par une violation qui subissent une perturbation significative de leurs activités.",
+      "source": "IBM, Cost of a Data Breach Report 2025"
+    },
+    {
+      "id": "recovery-time",
+      "value": "100-150 j",
+      "label": "Délai moyen de rétablissement",
+      "description": "Durée moyenne nécessaire pour un rétablissement complet après une violation de données.",
+      "source": "IBM, Cost of a Data Breach Report 2025"
+    },
+    {
+      "id": "africa-losses",
+      "value": "5 Md$",
+      "label": "Pertes liées à la cybercriminalité en Afrique",
+      "description": "Estimation des pertes économiques dues à la cybercriminalité sur le continent africain en 2025.",
+      "source": "INTERPOL, Africa Cyberthreat Assessment Report 2026",
+      "trend": "up"
+    },
+    {
+      "id": "africa-ia-share",
+      "value": "55 %",
+      "label": "Affaires africaines impliquant l'IA",
+      "description": "Part des affaires de cybercriminalité recensées en Afrique impliquant l'utilisation de l'intelligence artificielle.",
+      "source": "INTERPOL, Africa Cyberthreat Assessment Report 2026",
+      "trend": "up"
+    }
+  ],
+  "trend": [
+    { "year": "2023", "globalCostM": 4.45, "aiShare": 8 },
+    { "year": "2024", "globalCostM": 4.88, "aiShare": 13 },
+    { "year": "2025", "globalCostM": 4.44, "aiShare": 17 }
+  ]
+}

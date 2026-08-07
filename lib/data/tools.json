@@ -1,0 +1,32 @@
+[
+  {
+    "id": "nessus",
+    "name": "Nessus",
+    "role": "Scan de vulnérabilités infrastructure & réseau",
+    "category": "infrastructure"
+  },
+  {
+    "id": "postman",
+    "name": "Postman",
+    "role": "Tests de l'API applicative (charge, rate limiting, quotas)",
+    "category": "infrastructure"
+  },
+  {
+    "id": "promptfoo",
+    "name": "Promptfoo",
+    "role": "Campagnes automatisées de test de prompts et d'injection",
+    "category": "llm"
+  },
+  {
+    "id": "garak",
+    "name": "Garak",
+    "role": "Scanner de vulnérabilités LLM (injection, jailbreak, RAG)",
+    "category": "llm"
+  },
+  {
+    "id": "deepteam",
+    "name": "DeepTeam",
+    "role": "Framework de Red Teaming pour agents IA autonomes",
+    "category": "llm"
+  }
+]

@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #fcfcfb;
+  color: #1a1414;
+}
+
+::selection {
+  background-color: #e24b4a;
+  color: #ffffff;
+}
+
+/* subtle scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #fcfcfb;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #e6c9c9;
+  border-radius: 999px;
+  border: 2px solid #fcfcfb;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #e24b4a;
+}
+
+.container-page {
+  @apply mx-auto w-full max-w-7xl px-6 lg:px-10;
+}
+
+.card-surface {
+  @apply rounded-card border border-black/[0.06] bg-surface-card shadow-card transition-all duration-300;
+}
+
+.card-surface-hover {
+  @apply hover:-translate-y-0.5 hover:shadow-card-hover hover:border-black/[0.08];
+}
+
+.eyebrow {
+  @apply inline-flex items-center gap-2 rounded-full border border-brand-red/20 bg-brand-red/[0.06] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-red-dark;
+}
+
+.section-title {
+  @apply text-3xl font-bold tracking-tight text-brand-red-darker sm:text-4xl;
+}
+
+.section-subtitle {
+  @apply mt-3 max-w-2xl text-base leading-relaxed text-neutral-600;
+}
+
+.focus-ring {
+  @apply outline-none focus-visible:ring-2 focus-visible:ring-brand-red focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+}

@@ -1,0 +1,9 @@
+[
+  { "category": "infrastructure", "before": 58, "after": 4 },
+  { "category": "garde-fous", "before": 74, "after": 7 },
+  { "category": "llm01", "before": 82, "after": 9 },
+  { "category": "llm02", "before": 66, "after": 5 },
+  { "category": "llm06", "before": 91, "after": 11 },
+  { "category": "llm08", "before": 55, "after": 6 },
+  { "category": "llm10", "before": 70, "after": 13 }
+]
