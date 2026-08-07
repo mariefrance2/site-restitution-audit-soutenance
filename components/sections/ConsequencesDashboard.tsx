@@ -49,8 +49,15 @@ export function ConsequencesDashboard() {
           title="Pourquoi cet audit compte : le coût réel de l'inaction"
           subtitle="Des données sourcées, à l'échelle mondiale et africaine, pour situer l'enjeu économique et opérationnel d'un agent IA mal sécurisé."
         />
+        <FadeIn delay={0.05}>
+          <p className="mt-4 text-xs italic text-neutral-400">
+            Montants convertis en FCFA pour ce marché : parité fixe 1 € = 655,957 FCFA ; 1 $ ≈ 610
+            FCFA (taux indicatif). Chiffres sources originaux en dollars/euros — voir source de
+            chaque statistique.
+          </p>
+        </FadeIn>
 
-        <StaggerGroup className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <StaggerGroup className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {globalStats.map((stat, i) => {
             const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
             return (

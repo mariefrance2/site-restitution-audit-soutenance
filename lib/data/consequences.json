@@ -2,7 +2,7 @@
   "stats": [
     {
       "id": "cost-global",
-      "value": "4,44 M$",
+      "value": "2,71 Md FCFA",
       "label": "Coût mondial moyen d'une violation de données",
       "description": "Coût moyen constaté à l'échelle mondiale pour une organisation victime d'une violation de données en 2025.",
       "source": "IBM, Cost of a Data Breach Report 2025",
@@ -10,7 +10,7 @@
     },
     {
       "id": "cost-france",
-      "value": "3,59 M€",
+      "value": "2,35 Md FCFA",
       "label": "Coût moyen en France",
       "description": "Coût moyen d'une violation de données pour les organisations françaises en 2025.",
       "source": "IBM, Cost of a Data Breach Report 2025"
@@ -25,7 +25,7 @@
     },
     {
       "id": "shadow-ia",
-      "value": "+670 000 $",
+      "value": "+409 M FCFA",
       "label": "Surcoût lié à la « Shadow IA »",
       "description": "Surcoût moyen généré par l'usage non contrôlé d'outils IA (Shadow IA) lors d'une violation de données.",
       "source": "IBM, Cost of a Data Breach Report 2025",
@@ -47,7 +47,7 @@
     },
     {
       "id": "africa-losses",
-      "value": "5 Md$",
+      "value": "3050 Md FCFA",
       "label": "Pertes liées à la cybercriminalité en Afrique",
       "description": "Estimation des pertes économiques dues à la cybercriminalité sur le continent africain en 2025.",
       "source": "INTERPOL, Africa Cyberthreat Assessment Report 2026",
@@ -63,8 +63,8 @@
     }
   ],
   "trend": [
-    { "year": "2023", "globalCostM": 4.45, "aiShare": 8 },
-    { "year": "2024", "globalCostM": 4.88, "aiShare": 13 },
-    { "year": "2025", "globalCostM": 4.44, "aiShare": 17 }
+    { "year": "2023", "globalCostMdFcfa": 2.71, "aiShare": 8 },
+    { "year": "2024", "globalCostMdFcfa": 2.98, "aiShare": 13 },
+    { "year": "2025", "globalCostMdFcfa": 2.71, "aiShare": 17 }
   ]
 }

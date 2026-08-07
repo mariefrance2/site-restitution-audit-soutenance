@@ -47,6 +47,10 @@ export function ReportUpload({
         const blob = await upload(`reports/${sanitizeFilename(file.name)}`, file, {
           access: "public",
           handleUploadUrl: "/api/reports/upload",
+          // Explicite plutôt que déduit du fichier : certains navigateurs renvoient un
+          // File.type vide ou générique pour les PDF, ce qui peut faire échouer la
+          // validation allowedContentTypes côté serveur.
+          contentType: "application/pdf",
         });
 
         onUploaded({

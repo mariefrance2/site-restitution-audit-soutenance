@@ -13,7 +13,7 @@ import consequences from "@/lib/data/consequences.json";
 
 interface TooltipPayload {
   active?: boolean;
-  payload?: { payload: { year: string; globalCostM: number; aiShare: number } }[];
+  payload?: { payload: { year: string; globalCostMdFcfa: number; aiShare: number } }[];
 }
 
 function ChartTooltip({ active, payload }: TooltipPayload) {
@@ -23,7 +23,8 @@ function ChartTooltip({ active, payload }: TooltipPayload) {
     <div className="rounded-lg border border-black/10 bg-white px-3 py-2 text-sm shadow-card-hover">
       <p className="font-semibold text-brand-red-darker">{d.year}</p>
       <p className="mt-0.5 text-neutral-500">
-        Coût moyen : <span className="font-medium text-neutral-700">{d.globalCostM} M$</span>
+        Coût moyen :{" "}
+        <span className="font-medium text-neutral-700">{d.globalCostMdFcfa} Md FCFA</span>
       </p>
       <p className="text-neutral-500">
         Part liée à l&apos;IA :{" "}
@@ -53,7 +54,7 @@ export function TrendChart() {
           <Tooltip content={<ChartTooltip />} />
           <Line
             type="monotone"
-            dataKey="globalCostM"
+            dataKey="globalCostMdFcfa"
             stroke="#E24B4A"
             strokeWidth={2.5}
             dot={{ r: 4, fill: "#E24B4A" }}
@@ -72,7 +73,7 @@ export function TrendChart() {
       </ResponsiveContainer>
       <div className="mt-2 flex items-center justify-center gap-6 text-xs font-medium text-neutral-600">
         <span className="flex items-center gap-2">
-          <span className="h-0.5 w-4 rounded bg-brand-red" /> Coût moyen (M$)
+          <span className="h-0.5 w-4 rounded bg-brand-red" /> Coût moyen (Md FCFA)
         </span>
         <span className="flex items-center gap-2">
           <span className="h-0.5 w-4 rounded bg-brand-red-dark [background-image:repeating-linear-gradient(90deg,#791F1F_0_4px,transparent_4px_7px)]" />
