@@ -66,3 +66,8 @@ export function formatDate(dateString: string): string {
 export function cx(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
+
+export function sanitizeFilename(name: string): string {
+  const base = (name.split(/[\\/]/).pop() || "rapport.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
+  return base.toLowerCase().endsWith(".pdf") ? base : `${base}.pdf`;
+}

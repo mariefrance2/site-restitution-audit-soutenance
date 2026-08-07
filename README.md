@@ -35,7 +35,8 @@ app/
   layout.tsx            Layout racine, police Inter, métadonnées
   page.tsx               Assemblage des 5 sections
   globals.css            Design tokens, styles globaux
-  api/reports/route.ts   Upload (POST) et listing (GET) des rapports PDF
+  api/reports/route.ts          Listing des rapports PDF (GET)
+  api/reports/upload/route.ts   Émission du jeton d'upload direct Vercel Blob (POST)
 components/
   layout/                 Navbar, Footer
   sections/               Hero + les 5 sections du cahier des charges
@@ -81,13 +82,18 @@ légende visible et explicite (aucune information portée par la seule couleur).
 ## Dépôt de rapports PDF
 
 La section 5 propose une zone de glisser-déposer qui envoie les fichiers PDF
-vers `POST /api/reports`. Les fichiers sont stockés via **[Vercel Blob](https://vercel.com/docs/storage/vercel-blob)**
-(et non sur le disque local, en lecture seule sur les plateformes serverless
-comme Vercel) et sont immédiatement consultables/téléchargeables via la
-liste, alimentée par `GET /api/reports`. Aucune authentification n'est
-requise, conformément au cahier des charges (usage en démonstration de
-soutenance) ; les fichiers sont stockés avec un accès public (URL directe de
-visualisation/téléchargement), sans nécessiter de génération d'URL signées.
+directement du navigateur vers **[Vercel Blob](https://vercel.com/docs/storage/vercel-blob)**
+(et non vers le disque local, en lecture seule sur les plateformes serverless
+comme Vercel), en utilisant le flux d'upload client de `@vercel/blob` :
+`POST /api/reports/upload` ne fait qu'émettre un jeton d'autorisation à
+usage unique (fichier PDF uniquement, 25 Mo max) — le fichier lui-même
+transite directement vers le Blob Store, **sans passer par le corps de la
+fonction serverless**, qui est limité à environ 4,5 Mo sur Vercel quelle que
+soit la configuration applicative. Les fichiers déposés sont immédiatement
+consultables/téléchargeables via la liste, alimentée par `GET /api/reports`.
+Aucune authentification n'est requise, conformément au cahier des charges
+(usage en démonstration de soutenance) ; les fichiers sont stockés avec un
+accès public (URL directe de visualisation/téléchargement).
 
 **Configuration requise — jeton `BLOB_READ_WRITE_TOKEN`** (voir `.env.example`) :
 
