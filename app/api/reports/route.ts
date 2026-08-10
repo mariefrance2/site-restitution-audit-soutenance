@@ -34,6 +34,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const hasToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  console.log(
+    `[/api/reports POST] BLOB_READ_WRITE_TOKEN present=${hasToken}` +
+      (hasToken ? ` length=${process.env.BLOB_READ_WRITE_TOKEN!.length}` : "")
+  );
+
   const formData = await request.formData();
   const file = formData.get("file");
 
@@ -64,7 +70,11 @@ export async function POST(request: NextRequest) {
       addRandomSuffix: true,
       contentType: "application/pdf",
     });
-  } catch {
+  } catch (error) {
+    console.error(
+      "[/api/reports POST] put() failed:",
+      error instanceof Error ? error.stack ?? error.message : error
+    );
     return NextResponse.json(
       {
         error:
