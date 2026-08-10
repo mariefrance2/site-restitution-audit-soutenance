@@ -1,10 +1,8 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
 import { AnimatePresence, motion } from "framer-motion";
 import { FileUp, Loader2, UploadCloud } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-import { sanitizeFilename } from "@/lib/utils";
 
 export interface UploadedFile {
   name: string;
@@ -13,7 +11,7 @@ export interface UploadedFile {
   url: string;
 }
 
-const MAX_SIZE = 25 * 1024 * 1024; // 25 Mo
+const MAX_SIZE = 4 * 1024 * 1024; // 4 Mo
 
 export function ReportUpload({
   onUploaded,
@@ -35,32 +33,23 @@ export function ReportUpload({
       }
 
       if (file.size > MAX_SIZE) {
-        setError("Le fichier dépasse la taille maximale autorisée (25 Mo).");
+        setError("Le fichier dépasse la taille maximale autorisée (4 Mo).");
         return;
       }
 
       setIsUploading(true);
       try {
-        // Upload direct navigateur -> Vercel Blob : le fichier ne transite pas par
-        // notre fonction serverless, évitant la limite de ~4,5 Mo sur le corps des
-        // requêtes des Serverless Functions Vercel.
-        const blob = await upload(`reports/${sanitizeFilename(file.name)}`, file, {
-          access: "public",
-          handleUploadUrl: "/api/reports/upload",
-          // Explicite plutôt que déduit du fichier : certains navigateurs renvoient un
-          // File.type vide ou générique pour les PDF, ce qui peut faire échouer la
-          // validation allowedContentTypes côté serveur.
-          contentType: "application/pdf",
-        });
-
-        onUploaded({
-          name: blob.pathname.replace(/^reports\//, ""),
-          size: file.size,
-          uploadedAt: new Date().toISOString(),
-          url: blob.url,
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Échec de l'envoi du fichier.");
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/reports", { method: "POST", body: formData });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? "Échec de l'envoi du fichier.");
+          return;
+        }
+        onUploaded(data.file);
+      } catch {
+        setError("Une erreur réseau est survenue. Réessayez.");
       } finally {
         setIsUploading(false);
       }
@@ -137,7 +126,7 @@ export function ReportUpload({
                 Glissez-déposez un rapport PDF ici
               </p>
               <p className="text-xs text-neutral-500">
-                ou cliquez pour parcourir vos fichiers · PDF uniquement · 25 Mo max
+                ou cliquez pour parcourir vos fichiers · PDF uniquement · 4 Mo max
               </p>
               <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-brand-red">
                 <FileUp className="h-3.5 w-3.5" /> Sélectionner un fichier
