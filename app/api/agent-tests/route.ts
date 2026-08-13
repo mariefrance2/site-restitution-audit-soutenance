@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerScenario, type EvaluationInput } from "@/lib/agentTests/scenarios.server";
-import type { AgentTestReport, AgentTestRunResult } from "@/lib/agentTests/types";
+import type {
+  AgentStructuredResponse,
+  AgentTestReport,
+  AgentTestRunResult,
+  AgentThreat,
+} from "@/lib/agentTests/types";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +72,45 @@ async function callAgent(
 function excerptOf(text: string, max = 400): string {
   if (!text) return "(réponse vide)";
   return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+// Extrait une représentation structurée (message + menaces détectées) du
+// corps JSON complet de la réponse de l'agent, avant toute troncature.
+// Retourne undefined si la réponse n'est pas un JSON exploitable, auquel cas
+// le client retombe sur l'excerpt brut.
+function parseStructuredResponse(text: string): AgentStructuredResponse | undefined {
+  if (!text) return undefined;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+  if (!parsed || typeof parsed !== "object") return undefined;
+
+  const obj = parsed as Record<string, unknown>;
+  const message = typeof obj.message === "string" ? obj.message : undefined;
+
+  if (Array.isArray(obj.threats)) {
+    const threats: AgentThreat[] = obj.threats
+      .filter((t): t is Record<string, unknown> => Boolean(t) && typeof t === "object")
+      .map((t) => ({
+        name: typeof t.name === "string" ? t.name : "Menace",
+        weight: typeof t.weight === "number" ? t.weight : undefined,
+        detail: typeof t.detail === "string" ? t.detail : undefined,
+      }));
+    if (threats.length > 0) {
+      return { message, threats };
+    }
+  }
+
+  // Ancien format : un champ `detail` en chaîne simple au niveau racine, sans `threats`.
+  if (typeof obj.detail === "string") {
+    return { message, legacyDetail: obj.detail };
+  }
+
+  return message ? { message } : undefined;
 }
 
 function buildVerdict(runs: AgentTestRunResult[]): AgentTestReport["verdict"] {
@@ -138,6 +182,7 @@ export async function POST(request: NextRequest) {
         excerpt: hadError
           ? `Erreur : ${hadError}`
           : `HTTP ${lastResponse.status} — ${excerptOf(lastResponse.text)}`,
+        structured: hadError ? undefined : parseStructuredResponse(lastResponse.text),
         error: hadError,
       });
     }

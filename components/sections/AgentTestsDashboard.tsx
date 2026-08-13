@@ -6,6 +6,8 @@ import {
   Gauge,
   History,
   Loader2,
+  MessageSquareText,
+  OctagonAlert,
   Play,
   ShieldCheck,
   ShieldOff,
@@ -15,7 +17,7 @@ import {
 import { FadeIn, StaggerGroup, StaggerItem } from "@/components/ui/FadeIn";
 import { CriticalityBadge } from "@/components/ui/CriticalityBadge";
 import { AGENT_TEST_SCENARIOS_META } from "@/lib/agentTests/scenarios.meta";
-import type { AgentTestReport } from "@/lib/agentTests/types";
+import type { AgentTestReport, AgentTestRunResult } from "@/lib/agentTests/types";
 import {
   appendHistory,
   computeStats,
@@ -231,6 +233,27 @@ export function AgentTestsDashboard() {
                     {scenario.successCriterion}
                   </p>
 
+                  <details className="mt-3 rounded-lg border border-white/10 bg-black/20 open:pb-2.5">
+                    <summary className="flex cursor-pointer list-none select-none items-center gap-1.5 px-2.5 py-2 text-[11px] font-semibold text-neutral-300 [&::-webkit-details-marker]:hidden">
+                      <MessageSquareText className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+                      Voir la requête envoyée à l&apos;agent
+                    </summary>
+                    <div className="flex flex-col gap-2 px-2.5">
+                      {scenario.requestPreview.map((step, i) => (
+                        <div key={i}>
+                          {step.label && (
+                            <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                              {step.label}
+                            </p>
+                          )}
+                          <p className="rounded bg-white/5 px-2 py-1.5 text-[11px] italic leading-relaxed text-neutral-300">
+                            « {step.text} »
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+
                   <div className="mt-4">
                     <button
                       onClick={() => runScenario(scenario.id)}
@@ -354,11 +377,69 @@ function ScenarioResult({ report }: { report: AgentTestReport }) {
           {report.vulnerableCount}/{report.totalRuns}
         </span>
       </div>
-      {lastRun && (
-        <pre className="mt-2 max-h-24 overflow-y-auto whitespace-pre-wrap break-all rounded bg-black/40 p-2 text-[10px] leading-relaxed text-neutral-400">
-          {lastRun.excerpt}
-        </pre>
-      )}
+      {lastRun && <AgentResponsePreview run={lastRun} />}
     </div>
+  );
+}
+
+// Affiche la réponse de l'agent de façon lisible : message en clair, puis un
+// badge distinct par menace détectée (nom + icône, sans le poids ni le JSON
+// brut) avec son détail en dessous. Repli sur l'ancien format (`detail`
+// simple chaîne) ou, en dernier recours, sur l'excerpt brut si la réponse
+// n'est pas un JSON structuré exploitable.
+function AgentResponsePreview({ run }: { run: AgentTestRunResult }) {
+  const structured = run.structured;
+
+  if (structured?.threats && structured.threats.length > 0) {
+    return (
+      <div className="mt-2">
+        {structured.message && (
+          <p className="text-xs leading-relaxed text-neutral-300">{structured.message}</p>
+        )}
+        <div
+          className={cx(
+            "mt-2 flex gap-2",
+            structured.threats.length > 1 ? "flex-wrap" : "flex-col"
+          )}
+        >
+          {structured.threats.map((threat, i) => (
+            <div
+              key={`${threat.name}-${i}`}
+              className="flex min-w-0 flex-col gap-1 rounded-lg bg-black/25 p-2"
+            >
+              <span
+                className="inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold text-white"
+                style={{ backgroundColor: "#791F1F" }}
+              >
+                <OctagonAlert className="h-3 w-3 shrink-0" strokeWidth={2.5} />
+                {threat.name}
+              </span>
+              {threat.detail && (
+                <p className="max-w-[220px] text-[10px] leading-relaxed text-neutral-400">
+                  {threat.detail}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (structured?.message || structured?.legacyDetail) {
+    return (
+      <div className="mt-2 rounded bg-black/25 p-2 text-[11px] leading-relaxed">
+        {structured.message && <p className="text-neutral-300">{structured.message}</p>}
+        {structured.legacyDetail && (
+          <p className="mt-1 text-neutral-400">{structured.legacyDetail}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <pre className="mt-2 max-h-24 overflow-y-auto whitespace-pre-wrap break-all rounded bg-black/40 p-2 text-[10px] leading-relaxed text-neutral-400">
+      {run.excerpt}
+    </pre>
   );
 }
