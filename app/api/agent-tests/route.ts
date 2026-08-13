@@ -91,6 +91,12 @@ function parseStructuredResponse(text: string): AgentStructuredResponse | undefi
 
   const obj = parsed as Record<string, unknown>;
   const message = typeof obj.message === "string" ? obj.message : undefined;
+  const jobUuid =
+    typeof obj.job_uuid === "string"
+      ? obj.job_uuid
+      : typeof obj.jobUuid === "string"
+      ? obj.jobUuid
+      : undefined;
 
   if (Array.isArray(obj.threats)) {
     const threats: AgentThreat[] = obj.threats
@@ -101,16 +107,16 @@ function parseStructuredResponse(text: string): AgentStructuredResponse | undefi
         detail: typeof t.detail === "string" ? t.detail : undefined,
       }));
     if (threats.length > 0) {
-      return { message, threats };
+      return { message, threats, jobUuid };
     }
   }
 
   // Ancien format : un champ `detail` en chaîne simple au niveau racine, sans `threats`.
   if (typeof obj.detail === "string") {
-    return { message, legacyDetail: obj.detail };
+    return { message, legacyDetail: obj.detail, jobUuid };
   }
 
-  return message ? { message } : undefined;
+  return message || jobUuid ? { message, jobUuid } : undefined;
 }
 
 function buildVerdict(runs: AgentTestRunResult[]): AgentTestReport["verdict"] {
@@ -120,8 +126,68 @@ function buildVerdict(runs: AgentTestRunResult[]): AgentTestReport["verdict"] {
   return "partial";
 }
 
+// Exécute une requête personnalisée (texte libre saisi par l'utilisateur),
+// avec la même structure de payload que les scénarios prédéfinis mais une
+// seule exécution, sans critère de vulnérabilité prédéfini.
+async function runCustomRequest(content: string) {
+  const reachable = await isAgentReachable();
+  if (!reachable) {
+    return NextResponse.json(
+      { error: agentUnreachableMessage(), agentUrl: AGENT_API_URL },
+      { status: 503 }
+    );
+  }
+
+  const runStart = Date.now();
+  const result = await callAgent("/api/v1/jobs", {
+    ticket_context: {
+      tickets_id: Math.floor(100000 + Math.random() * 900000),
+      entities_id: 1,
+      name: "Test personnalisé",
+      content,
+      status: "new",
+      priority: 1,
+      urgency: 1,
+      impact: 1,
+      category: "support",
+      category_id: 1,
+      actors: [],
+      groups: [],
+      followups: [],
+      solutions: [],
+    },
+  });
+
+  if (result.error) {
+    return NextResponse.json(
+      { error: `Erreur lors de l'appel à l'agent : ${result.error}` },
+      { status: 502 }
+    );
+  }
+
+  const run: AgentTestRunResult = {
+    index: 1,
+    vulnerable: false,
+    status: result.status || null,
+    durationMs: Date.now() - runStart,
+    excerpt: excerptOf(result.text),
+    structured: parseStructuredResponse(result.text),
+  };
+
+  return NextResponse.json({ run });
+}
+
 export async function POST(request: NextRequest) {
-  const { scenarioId } = (await request.json()) as { scenarioId?: string };
+  const body = (await request.json()) as { scenarioId?: string; customContent?: string };
+
+  if (typeof body.customContent === "string") {
+    if (!body.customContent.trim()) {
+      return NextResponse.json({ error: "Le contenu de la requête est requis." }, { status: 400 });
+    }
+    return runCustomRequest(body.customContent);
+  }
+
+  const { scenarioId } = body;
 
   if (!scenarioId) {
     return NextResponse.json({ error: "scenarioId requis." }, { status: 400 });

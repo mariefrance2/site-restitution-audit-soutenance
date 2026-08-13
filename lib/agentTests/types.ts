@@ -36,6 +36,8 @@ export interface AgentStructuredResponse {
   threats?: AgentThreat[];
   // Ancien format : un simple champ `detail` au niveau racine, sans `threats`.
   legacyDetail?: string;
+  // Identifiant de job renvoyé par l'agent lorsque la requête est acceptée (HTTP 202).
+  jobUuid?: string;
 }
 
 export interface AgentTestRunResult {
