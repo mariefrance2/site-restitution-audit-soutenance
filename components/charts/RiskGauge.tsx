@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { criticalities } from "@/lib/utils";
+import { CriticalityIcon } from "@/components/ui/CriticalityIcon";
 
 const ZONES = [
   { from: 0, to: 25, hex: "#639922", label: "Faible" },
@@ -111,8 +112,10 @@ export function RiskGauge({
           .slice()
           .reverse()
           .map((c) => (
-            <li key={c.id} className="flex items-center gap-2 text-xs font-medium text-neutral-600">
-              <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: c.hex }} />
+            <li key={c.id} className="flex items-center gap-1.5 text-xs font-medium text-neutral-600">
+              <span style={{ color: c.hex }}>
+                <CriticalityIcon level={c.id} className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} />
+              </span>
               {c.label}
             </li>
           ))}

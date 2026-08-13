@@ -1,6 +1,7 @@
 import { AlertTriangle, ListChecks, ShieldAlert, Sparkles } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { ExecutiveSummaryButton } from "@/components/ui/ExecutiveSummaryButton";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { OwaspBarChart } from "@/components/charts/OwaspBarChart";
 import { CriticalityDonut } from "@/components/charts/CriticalityDonut";
@@ -18,11 +19,16 @@ export function OverviewDashboard() {
         style={{ background: "radial-gradient(circle, rgba(240,166,164,0.24) 0%, rgba(240,166,164,0) 70%)" }}
       />
       <div className="container-page">
-        <SectionHeading
-          eyebrow="Section 1 — Vue d'ensemble"
-          title="Dashboard général de l'audit"
-          subtitle="Une synthèse chiffrée de l'ensemble des constats identifiés lors de la campagne d'audit et de Red Teaming de l'agent IA."
-        />
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <SectionHeading
+            eyebrow="Section 1 — Vue d'ensemble"
+            title="Dashboard général de l'audit"
+            subtitle="Une synthèse chiffrée de l'ensemble des constats identifiés lors de la campagne d'audit et de Red Teaming de l'agent IA."
+          />
+          <FadeIn delay={0.1} className="shrink-0">
+            <ExecutiveSummaryButton />
+          </FadeIn>
+        </div>
 
         <div className="mt-12 grid grid-cols-2 gap-5 lg:grid-cols-4">
           <FadeIn delay={0}>

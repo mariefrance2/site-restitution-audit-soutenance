@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { ArrowRight, CheckCircle2, CircleDot, Wrench } from "lucide-react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CriticalityBadge } from "@/components/ui/CriticalityBadge";
+import { CriticalityIcon } from "@/components/ui/CriticalityIcon";
 import { FadeIn, StaggerGroup, StaggerItem } from "@/components/ui/FadeIn";
+import { StrideMatrix } from "@/components/sections/StrideMatrix";
 import {
   categories,
   criticalities,
@@ -82,7 +84,11 @@ export function TestResults() {
                 key={c.id}
                 active={criticalityFilter === c.id}
                 onClick={() => setCriticalityFilter(c.id)}
-                dotColor={c.hex}
+                icon={
+                  <span style={{ color: criticalityFilter === c.id ? "#fff" : c.hex }}>
+                    <CriticalityIcon level={c.id} className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} />
+                  </span>
+                }
               >
                 {c.label}
               </FilterPill>
@@ -130,6 +136,8 @@ export function TestResults() {
             </FadeIn>
           )}
         </div>
+
+        <StrideMatrix />
       </div>
     </section>
   );
@@ -139,12 +147,12 @@ function FilterPill({
   active,
   onClick,
   children,
-  dotColor,
+  icon,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
-  dotColor?: string;
+  icon?: ReactNode;
 }) {
   return (
     <button
@@ -156,12 +164,7 @@ function FilterPill({
           : "border-black/10 bg-white text-neutral-600 hover:border-brand-red/30 hover:text-brand-red-dark"
       )}
     >
-      {dotColor && (
-        <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: active ? "#fff" : dotColor }}
-        />
-      )}
+      {icon}
       {children}
     </button>
   );

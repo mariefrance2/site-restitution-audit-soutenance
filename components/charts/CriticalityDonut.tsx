@@ -3,6 +3,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { criticalities, countByCriticality, findings } from "@/lib/utils";
 import { Legend } from "@/components/ui/Legend";
+import { CriticalityIcon } from "@/components/ui/CriticalityIcon";
 
 interface TooltipPayload {
   active?: boolean;
@@ -66,10 +67,17 @@ export function CriticalityDonut() {
       </div>
       <Legend
         className="w-full sm:w-auto sm:min-w-[220px]"
-        items={data.map((d) => ({
-          label: d.label,
-          hex: d.hex,
-          value: `${d.value} · ${Math.round((d.value / findings.length) * 100)}%`,
+        items={criticalities.map((c) => ({
+          label: c.label,
+          hex: c.hex,
+          value: `${countByCriticality(c.id)} · ${Math.round(
+            (countByCriticality(c.id) / findings.length) * 100
+          )}%`,
+          icon: (
+            <span style={{ color: c.hex }}>
+              <CriticalityIcon level={c.id} className="h-4 w-4 shrink-0" strokeWidth={2.25} />
+            </span>
+          ),
         }))}
       />
     </div>

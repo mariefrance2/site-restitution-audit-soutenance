@@ -6,6 +6,7 @@ import { TestResults } from "@/components/sections/TestResults";
 import { BilanDashboard } from "@/components/sections/BilanDashboard";
 import { ConsequencesDashboard } from "@/components/sections/ConsequencesDashboard";
 import { ValueAndReports } from "@/components/sections/ValueAndReports";
+import { AgentTestsDashboard } from "@/components/sections/AgentTestsDashboard";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         <BilanDashboard />
         <ConsequencesDashboard />
         <ValueAndReports />
+        <AgentTestsDashboard />
       </main>
       <Footer />
     </>

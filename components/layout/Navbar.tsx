@@ -10,6 +10,7 @@ const LINKS = [
   { href: "#bilan", label: "Bilan de campagne" },
   { href: "#consequences", label: "Enjeux & conséquences" },
   { href: "#valeur", label: "Valeur & rapports" },
+  { href: "#tests-automatises", label: "Tests automatisés" },
 ];
 
 export function Navbar() {
