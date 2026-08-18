@@ -1,24 +1,34 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
+  Check,
+  CheckCircle2,
   Gauge,
   History,
   Loader2,
   MessageSquareText,
   OctagonAlert,
   Play,
+  RefreshCw,
   ShieldCheck,
   ShieldOff,
   Sparkles,
   Terminal,
+  UserCheck,
+  X,
   Zap,
 } from "lucide-react";
 import { FadeIn, StaggerGroup, StaggerItem } from "@/components/ui/FadeIn";
 import { CriticalityBadge } from "@/components/ui/CriticalityBadge";
 import { AGENT_TEST_SCENARIOS_META } from "@/lib/agentTests/scenarios.meta";
-import type { AgentTestReport, AgentTestRunResult } from "@/lib/agentTests/types";
+import type {
+  AgentTestReport,
+  AgentTestRunResult,
+  PendingDecisionJob,
+  PendingDecisionTarget,
+} from "@/lib/agentTests/types";
 import {
   appendHistory,
   computeStats,
@@ -42,6 +52,16 @@ const KIND_LABEL: Record<string, string> = {
   burst: "Rafale de requêtes",
 };
 
+type PendingDecisionsStatus = "idle" | "loading" | "loaded" | "error";
+
+function pendingTargetLabel(primary: PendingDecisionTarget): string {
+  if (primary.group_name) return primary.group_name;
+  if (primary.user_name) return primary.user_name;
+  if (primary.group_id !== undefined) return `groupe #${primary.group_id}`;
+  if (primary.user_id !== undefined) return `utilisateur #${primary.user_id}`;
+  return "cible inconnue";
+}
+
 export function AgentTestsDashboard() {
   const [results, setResults] = useState<Record<string, ScenarioState>>({});
   const [history, setHistory] = useState<StoredRunEntry[]>([]);
@@ -60,12 +80,81 @@ export function AgentTestsDashboard() {
     run?: AgentTestRunResult;
     error?: string;
   }>({ status: "idle" });
+  const [customElapsed, setCustomElapsed] = useState(0);
+  const customTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [pendingDecisions, setPendingDecisions] = useState<PendingDecisionJob[]>([]);
+  const [pendingStatus, setPendingStatus] = useState<PendingDecisionsStatus>("idle");
+  const [pendingError, setPendingError] = useState<string | null>(null);
+  const [decisionInFlight, setDecisionInFlight] = useState<string | null>(null);
+  const [lastConfirmation, setLastConfirmation] = useState<string | null>(null);
+  const [reviewerName, setReviewerName] = useState("Technicien via site de restitution");
 
   useEffect(() => {
     const h = loadHistory();
     setHistory(h);
     setStats(computeStats(h));
   }, []);
+
+  const fetchPendingDecisions = useMemo(
+    () =>
+      async function fetchPendingDecisions() {
+        setPendingStatus("loading");
+        setPendingError(null);
+        try {
+          const res = await fetch("/api/agent-tests/pending-decisions");
+          const data = await res.json();
+
+          if (!res.ok) {
+            setPendingStatus("error");
+            setPendingError(data.error || "Erreur lors du chargement.");
+            if (res.status === 503) setAgentUnreachable(data.error);
+            return;
+          }
+
+          setPendingDecisions(Array.isArray(data.jobs) ? data.jobs : []);
+          setPendingStatus("loaded");
+        } catch {
+          setPendingStatus("error");
+          setPendingError("Erreur réseau : impossible de joindre le site local.");
+        }
+      },
+    []
+  );
+
+  useEffect(() => {
+    fetchPendingDecisions();
+  }, [fetchPendingDecisions]);
+
+  const submitDecision = async (job: PendingDecisionJob, approve: boolean) => {
+    setDecisionInFlight(job.job_uuid);
+    try {
+      const res = await fetch("/api/agent-tests/human-decision", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          jobUuid: job.job_uuid,
+          approve,
+          reviewerName: reviewerName.trim() || "Technicien via site de restitution",
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPendingError(data.error || "Erreur lors de l'envoi de la décision.");
+        if (res.status === 503) setAgentUnreachable(data.error);
+        return;
+      }
+
+      const target = pendingTargetLabel(job.pending_assignee.primary);
+      setPendingDecisions((prev) => prev.filter((j) => j.job_uuid !== job.job_uuid));
+      setLastConfirmation(`Assignation vers ${target} ${approve ? "approuvée" : "rejetée"}`);
+    } catch {
+      setPendingError("Erreur réseau : impossible de joindre le site local.");
+    } finally {
+      setDecisionInFlight(null);
+    }
+  };
 
   const runScenario = useMemo(
     () =>
@@ -105,6 +194,11 @@ export function AgentTestsDashboard() {
   const runCustomTest = async () => {
     if (!customContent.trim() || customState.status === "running") return;
     setCustomState({ status: "running" });
+    setCustomElapsed(0);
+    const startedAt = Date.now();
+    customTimerRef.current = setInterval(() => {
+      setCustomElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
     try {
       const res = await fetch("/api/agent-tests", {
         method: "POST",
@@ -125,6 +219,11 @@ export function AgentTestsDashboard() {
         status: "error",
         error: "Erreur réseau : impossible de joindre le site local.",
       });
+    } finally {
+      if (customTimerRef.current) {
+        clearInterval(customTimerRef.current);
+        customTimerRef.current = null;
+      }
     }
   };
 
@@ -234,6 +333,125 @@ export function AgentTestsDashboard() {
           )}
         </FadeIn>
 
+        {/* Décisions en attente (LLM06 human-in-the-loop) */}
+        <FadeIn delay={0.11} className="mt-6">
+          <div className="rounded-card border border-brand-red/25 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <UserCheck className="h-4 w-4 text-brand-rose" />
+                <h3 className="text-sm font-bold text-white">Décisions en attente (LLM06)</h3>
+              </div>
+              <button
+                onClick={fetchPendingDecisions}
+                disabled={pendingStatus === "loading"}
+                className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {pendingStatus === "loading" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )}
+                Actualiser
+              </button>
+            </div>
+            <p className="mt-1.5 max-w-xl text-xs leading-relaxed text-neutral-400">
+              Assignations sensibles suspendues par l&apos;agent, en attente d&apos;une validation
+              humaine avant exécution.
+            </p>
+
+            <label className="mt-3 block max-w-sm text-[11px] font-semibold text-neutral-400">
+              Nom du technicien
+              <input
+                type="text"
+                value={reviewerName}
+                onChange={(e) => setReviewerName(e.target.value)}
+                className="focus-ring mt-1 w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-xs font-normal text-white placeholder:text-neutral-500"
+              />
+            </label>
+
+            {lastConfirmation && (
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-criticality-low/30 bg-criticality-low/10 px-3 py-2 text-[11px] font-semibold text-criticality-low">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                {lastConfirmation}
+              </div>
+            )}
+
+            {pendingStatus === "error" && pendingError && (
+              <div className="mt-3 rounded-lg border border-criticality-high/30 bg-criticality-high/10 px-3 py-2 text-[11px] leading-relaxed text-red-200">
+                {pendingError}
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-col gap-2.5">
+              {pendingStatus === "loading" && pendingDecisions.length === 0 && (
+                <div className="flex items-center gap-2 text-xs text-neutral-400">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Chargement…
+                </div>
+              )}
+
+              {pendingStatus === "loaded" && pendingDecisions.length === 0 && (
+                <p className="text-xs text-neutral-500">Aucune décision en attente.</p>
+              )}
+
+              {pendingDecisions.map((job) => {
+                const target = pendingTargetLabel(job.pending_assignee.primary);
+                const inFlight = decisionInFlight === job.job_uuid;
+                return (
+                  <div
+                    key={job.job_uuid}
+                    className="rounded-lg border border-white/10 bg-black/20 p-3"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-mono text-[11px] font-semibold text-neutral-400">
+                        Ticket #{job.tickets_id}
+                      </span>
+                      {typeof job.pending_assignee.primary.confidence === "number" && (
+                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-400">
+                          Confiance {Math.round(job.pending_assignee.primary.confidence * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-sm font-semibold text-white">
+                      Suggestion : {target}
+                    </p>
+                    {job.pending_assignee.primary.sensitivity_reason && (
+                      <p className="mt-1 text-xs leading-relaxed text-criticality-high">
+                        {job.pending_assignee.primary.sensitivity_reason}
+                      </p>
+                    )}
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => submitDecision(job, true)}
+                        disabled={inFlight}
+                        className="focus-ring inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-criticality-low/40 bg-criticality-low/10 px-3 py-2 text-[11px] font-semibold text-criticality-low transition-colors hover:bg-criticality-low/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {inFlight ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Check className="h-3.5 w-3.5" />
+                        )}
+                        Approuver
+                      </button>
+                      <button
+                        onClick={() => submitDecision(job, false)}
+                        disabled={inFlight}
+                        className="focus-ring inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-criticality-high/40 bg-criticality-high/10 px-3 py-2 text-[11px] font-semibold text-criticality-high transition-colors hover:bg-criticality-high/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {inFlight ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <X className="h-3.5 w-3.5" />
+                        )}
+                        Rejeter
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </FadeIn>
+
         {/* Requête personnalisée */}
         <FadeIn delay={0.12} className="mt-6">
           <div className="rounded-card border border-brand-red/25 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6">
@@ -260,7 +478,7 @@ export function AgentTestsDashboard() {
               >
                 {customState.status === "running" ? (
                   <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Exécution en cours…
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Traitement en cours… {customElapsed}s
                   </>
                 ) : (
                   <>
@@ -269,6 +487,13 @@ export function AgentTestsDashboard() {
                 )}
               </button>
             </div>
+
+            {customState.status === "running" && (
+              <p className="mt-2 text-[11px] text-neutral-500">
+                Le traitement local peut prendre plusieurs minutes (modèle LLM local) — la
+                requête reste active jusqu&apos;à 10 minutes.
+              </p>
+            )}
 
             {customState.status === "error" && (
               <div className="mt-3 rounded-lg border border-criticality-high/30 bg-criticality-high/10 px-3 py-2 text-[11px] leading-relaxed text-red-200">

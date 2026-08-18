@@ -63,3 +63,33 @@ export interface AgentUnreachableError {
   error: string;
   agentUrl: string;
 }
+
+export interface PendingDecisionTarget {
+  group_id?: number;
+  group_name?: string;
+  user_id?: number;
+  user_name?: string;
+  confidence?: number;
+  reasoning?: string;
+  sensitivity_reason?: string;
+}
+
+export interface PendingDecisionAlternative {
+  group_id?: number;
+  group_name?: string;
+  user_id?: number;
+  user_name?: string;
+  confidence?: number;
+  reasoning?: string;
+}
+
+// Job en attente d'une décision humaine (LLM06 human-in-the-loop) — renvoyé
+// par GET /api/v1/jobs/pending-decisions.
+export interface PendingDecisionJob {
+  job_uuid: string;
+  tickets_id: number;
+  pending_assignee: {
+    primary: PendingDecisionTarget;
+    alternatives: PendingDecisionAlternative[];
+  };
+}

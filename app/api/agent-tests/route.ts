@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerScenario, type EvaluationInput } from "@/lib/agentTests/scenarios.server";
+import {
+  AGENT_API_URL,
+  agentUnreachableMessage,
+  callAgentJson,
+  isAgentReachable,
+} from "@/lib/agentTests/agentClient.server";
 import type {
   AgentStructuredResponse,
   AgentTestReport,
@@ -9,65 +15,11 @@ import type {
 
 export const dynamic = "force-dynamic";
 
-const AGENT_API_URL = (process.env.AGENT_API_URL || "http://localhost:8000").replace(/\/$/, "");
-const AGENT_API_KEY = process.env.AGENT_API_KEY || "";
-const HEALTHCHECK_TIMEOUT_MS = 3000;
-const CALL_TIMEOUT_MS = 20000;
-
-function agentUnreachableMessage(): string {
-  return (
-    `Agent injoignable à ${AGENT_API_URL}. Cette fonctionnalité nécessite que le site tourne ` +
-    "en local, connecté à l'agent actif. Vérifiez que l'agent est démarré et que " +
-    "AGENT_API_URL est correctement configuré."
-  );
-}
-
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function isAgentReachable(): Promise<boolean> {
-  try {
-    await fetchWithTimeout(`${AGENT_API_URL}/docs`, { method: "GET" }, HEALTHCHECK_TIMEOUT_MS);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function callAgent(
-  endpoint: string,
-  body: unknown
-): Promise<EvaluationInput & { error?: string }> {
-  try {
-    const res = await fetchWithTimeout(
-      `${AGENT_API_URL}${endpoint}`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "X-API-Key": AGENT_API_KEY,
-        },
-        body: JSON.stringify(body),
-      },
-      CALL_TIMEOUT_MS
-    );
-    const text = await res.text();
-    return { status: res.status, text };
-  } catch (err) {
-    return {
-      status: 0,
-      text: "",
-      error: err instanceof Error ? err.message : "Erreur réseau inconnue.",
-    };
-  }
-}
+// Le traitement local (modèle LLM sur le poste de l'agent) peut prendre
+// plusieurs minutes pour une requête personnalisée : on laisse largement le
+// temps d'aboutir plutôt que d'abandonner prématurément côté site pendant
+// que le job continue de tourner côté agent.
+const CUSTOM_CALL_TIMEOUT_MS = 10 * 60 * 1000;
 
 function excerptOf(text: string, max = 400): string {
   if (!text) return "(réponse vide)";
@@ -128,7 +80,8 @@ function buildVerdict(runs: AgentTestRunResult[]): AgentTestReport["verdict"] {
 
 // Exécute une requête personnalisée (texte libre saisi par l'utilisateur),
 // avec la même structure de payload que les scénarios prédéfinis mais une
-// seule exécution, sans critère de vulnérabilité prédéfini.
+// seule exécution, sans critère de vulnérabilité prédéfini, et un délai
+// d'attente étendu (traitement local potentiellement long).
 async function runCustomRequest(content: string) {
   const reachable = await isAgentReachable();
   if (!reachable) {
@@ -139,24 +92,28 @@ async function runCustomRequest(content: string) {
   }
 
   const runStart = Date.now();
-  const result = await callAgent("/api/v1/jobs", {
-    ticket_context: {
-      tickets_id: Math.floor(100000 + Math.random() * 900000),
-      entities_id: 1,
-      name: "Test personnalisé",
-      content,
-      status: "new",
-      priority: 1,
-      urgency: 1,
-      impact: 1,
-      category: "support",
-      category_id: 1,
-      actors: [],
-      groups: [],
-      followups: [],
-      solutions: [],
+  const result = await callAgentJson(
+    "/api/v1/jobs",
+    {
+      ticket_context: {
+        tickets_id: Math.floor(100000 + Math.random() * 900000),
+        entities_id: 1,
+        name: "Test personnalisé",
+        content,
+        status: "new",
+        priority: 1,
+        urgency: 1,
+        impact: 1,
+        category: "support",
+        category_id: 1,
+        actors: [],
+        groups: [],
+        followups: [],
+        solutions: [],
+      },
     },
-  });
+    CUSTOM_CALL_TIMEOUT_MS
+  );
 
   if (result.error) {
     return NextResponse.json(
@@ -212,7 +169,7 @@ export async function POST(request: NextRequest) {
     const size = scenario.burstSize ?? 20;
     const start = Date.now();
     const calls = Array.from({ length: size }, (_, i) =>
-      callAgent(scenario.calls[0].endpoint, scenario.calls[0].buildBody(i))
+      callAgentJson(scenario.calls[0].endpoint, scenario.calls[0].buildBody(i))
     );
     const results = await Promise.all(calls);
     results.forEach((r, i) => {
@@ -232,7 +189,7 @@ export async function POST(request: NextRequest) {
       let hadError: string | undefined;
 
       for (const call of scenario.calls) {
-        const result = await callAgent(call.endpoint, call.buildBody(i));
+        const result = await callAgentJson(call.endpoint, call.buildBody(i));
         if (result.error) hadError = result.error;
         responses.push({ status: result.status, text: result.text });
       }
