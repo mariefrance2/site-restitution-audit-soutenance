@@ -99,11 +99,15 @@ export function AgentTestsDashboard() {
   const fetchPendingDecisions = useMemo(
     () =>
       async function fetchPendingDecisions() {
+        // Diagnostic temporaire : confirme dans la console navigateur que
+        // l'appel part bien côté client, avant même la réponse du serveur.
+        console.log("[pending-decisions] appel de fetchPendingDecisions()");
         setPendingStatus("loading");
         setPendingError(null);
         try {
-          const res = await fetch("/api/agent-tests/pending-decisions");
+          const res = await fetch("/api/agent-tests/pending-decisions", { cache: "no-store" });
           const data = await res.json();
+          console.log("[pending-decisions] réponse reçue :", res.status, data);
 
           if (!res.ok) {
             setPendingStatus("error");
@@ -114,7 +118,8 @@ export function AgentTestsDashboard() {
 
           setPendingDecisions(Array.isArray(data.jobs) ? data.jobs : []);
           setPendingStatus("loaded");
-        } catch {
+        } catch (err) {
+          console.error("[pending-decisions] erreur lors du fetch :", err);
           setPendingStatus("error");
           setPendingError("Erreur réseau : impossible de joindre le site local.");
         }
@@ -123,6 +128,7 @@ export function AgentTestsDashboard() {
   );
 
   useEffect(() => {
+    console.log("[pending-decisions] effet de montage déclenché");
     fetchPendingDecisions();
   }, [fetchPendingDecisions]);
 
@@ -342,7 +348,10 @@ export function AgentTestsDashboard() {
                 <h3 className="text-sm font-bold text-white">Décisions en attente (LLM06)</h3>
               </div>
               <button
-                onClick={fetchPendingDecisions}
+                onClick={() => {
+                  console.log("[pending-decisions] clic sur Actualiser");
+                  fetchPendingDecisions();
+                }}
                 disabled={pendingStatus === "loading"}
                 className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
